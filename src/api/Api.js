@@ -26,29 +26,22 @@ const getAllCountriesAndCode = (summaryData) => {
 // @param country - the country <string>
 // @param dates - array of date objects
 const getConfirmedCasesByCountry = async (country, dates) => {
-  let temp;
-  if (sessionStorage.getItem(country)) {
-    temp = JSON.parse(sessionStorage.getItem(country));
-  } else {
-    // Await the promise.all and convert each json() promise to extract the data
-    temp = await Promise.all(
-      dates.slice(-8, dates.length).map(async (date) => {
-        // console.log(date);
-        //Set the nextDate to be the next day
-        const nextDate = new Date(date);
-        nextDate.setDate(date.getDate() + 1);
+  // Await the promise.all and convert each json() promise to extract the data
+  const temp = await Promise.all(
+    dates.slice(-8, dates.length).map(async (date) => {
+      // console.log(date);
+      //Set the nextDate to be the next day
+      const nextDate = new Date(date);
+      nextDate.setDate(date.getDate() + 1);
 
-        // Api url
-        const url = `${BASE_URL}/total/country/${country}/status/confirmed?from=${date.toISOString()}&to=${nextDate.toISOString()}`;
-        // console.log(url);
-        const data = await fetch(url).then((res) => res.json()); // We want to await the response and send out another promise with json()
-        return data;
-      })
-    );
-    sessionStorage.setItem(country, JSON.stringify(temp));
-    // console.log(JSON.stringify(temp));
-  }
-  console.log(temp);
+      // Api url
+      const url = `${BASE_URL}/total/country/${country}/status/confirmed?from=${date.toISOString()}&to=${nextDate.toISOString()}`;
+      // console.log(url);
+      const data = await fetch(url).then((res) => res.json()); // We want to await the response and send out another promise with json()
+      return data;
+    })
+  );
+  // console.log(temp);
   return temp;
 };
 
@@ -57,7 +50,7 @@ const getAllDatesInRange = (endDate) => {
   const temp = new Date(endDate);
   temp.setDate(temp.getDate() - 3);
   const listOfDates = [temp];
-  const currentDate = new Date(endDate);
+  const currentDate = new Date(temp);
 
   //We want to set the date to the first day of each month
   // Must format everything into UTC format
@@ -66,6 +59,7 @@ const getAllDatesInRange = (endDate) => {
   currentDate.setUTCMinutes(0);
   currentDate.setUTCSeconds(0);
   for (let i = 0; i < 7; i++) {
+    console.log(currentDate);
     //Update the date and append it into the array
     if (currentDate.toISOString() !== endDate.toISOString()) {
       listOfDates.push(new Date(currentDate));
@@ -73,6 +67,7 @@ const getAllDatesInRange = (endDate) => {
     currentDate.setUTCHours(0);
     currentDate.setUTCMonth(currentDate.getUTCMonth() - 1);
   }
+  console.log(listOfDates);
   return [...listOfDates].reverse();
 };
 
